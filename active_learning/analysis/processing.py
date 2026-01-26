@@ -39,14 +39,10 @@ def calculate_element_counts(input_file, max_rows=280000):
                    Columns: [Ni_count, Fe_count, Co_count, energy_diff, 
                             uncertainty, multiplicity]
     
-    Raises:
-        FileNotFoundError: If input file doesn't exist
-        ValueError: If input file has incorrect format
     """
     if not os.path.exists(input_file):
         raise FileNotFoundError(f"Input file not found: {input_file}")
     
-    # Initialize arrays
     Ni = np.zeros(max_rows)
     Fe = np.zeros(max_rows)
     Co = np.zeros(max_rows)
@@ -58,10 +54,8 @@ def calculate_element_counts(input_file, max_rows=280000):
     
     with open(input_file, 'r') as handle:
         for i, line in enumerate(handle):
-            # Parse line into elements
             elements = line.strip().split(',')
             
-            # Validate line format
             if len(elements) < 22:
                 print(f"Warning: Line {i+1} has only {len(elements)} columns, expected 22+")
                 continue
@@ -79,7 +73,6 @@ def calculate_element_counts(input_file, max_rows=280000):
                 Fe[i] = sum(features[j] for j in range(1, 15, 3))
                 Co[i] = sum(features[j] for j in range(2, 15, 3))
                 
-                # Store other values
                 diffs[i] = diff
                 uncertain[i] = uncertainty
                 multiplicity[i] = mult
@@ -88,14 +81,12 @@ def calculate_element_counts(input_file, max_rows=280000):
                 print(f"Warning: Error parsing line {i+1}: {e}")
                 continue
             
-            # Progress indicator
             if (i + 1) % 10000 == 0:
                 print(f"  Processed {i + 1} lines...")
             
             if i >= max_rows - 1:
                 break
     
-    # Trim arrays to actual size
     actual_size = i + 1
     Ni = Ni[:actual_size]
     Fe = Fe[:actual_size]
@@ -104,7 +95,6 @@ def calculate_element_counts(input_file, max_rows=280000):
     uncertain = uncertain[:actual_size]
     multiplicity = multiplicity[:actual_size]
     
-    # Combine all data
     output = np.column_stack([Ni, Fe, Co, diffs, uncertain, multiplicity])
     
     return output
@@ -124,7 +114,7 @@ def save_results(output_data, output_file):
         fmt=['%d', '%d', '%d', '%.5f', '%.5f', '%d'],
         delimiter=','
     )
-    print(f"✓ Results saved to: {output_file}")
+    print(f" Results saved to: {output_file}")
 
 
 def main():
@@ -134,7 +124,6 @@ def main():
     Usage:
         python sum_element.py <input_file> [output_file]
     """
-    # Check command line arguments
     if len(sys.argv) < 2:
         print("ERROR: Missing required argument\n")
         print("Usage: python sum_element.py <input_file> [output_file]\n")
@@ -147,26 +136,20 @@ def main():
         print("  15 features, multiplicity, predictions, uncertainties")
         sys.exit(1)
     
-    # Parse arguments
     input_file = sys.argv[1]
     
-    # Default output filename based on input
     if len(sys.argv) > 2:
         output_file = sys.argv[2]
     else:
-        # Generate default output name from input name
         base_name = os.path.splitext(input_file)[0]
         output_file = f"{base_name}_count.csv"
     
     try:
-        # Process the data
         output_data = calculate_element_counts(input_file)
         
-        # Save results
         save_results(output_data, output_file)
         
-        # Print summary
-        print(f"\n✓ Processed {len(output_data)} configurations")
+        print(f"\n Processed {len(output_data)} configurations")
         print(f"\nElement count ranges:")
         print(f"  Ni: {output_data[:,0].min():.0f} - {output_data[:,0].max():.0f}")
         print(f"  Fe: {output_data[:,1].min():.0f} - {output_data[:,1].max():.0f}")
