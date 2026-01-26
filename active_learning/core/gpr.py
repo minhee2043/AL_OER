@@ -35,19 +35,6 @@ from scipy.spatial.distance import pdist, cdist, squareform
 # ============================================================================
 
 def _check_length_scale(X, length_scale):
-    """
-    Validate the length scale parameter for the RBF kernel.
-    
-    Args:
-        X (np.ndarray): Input data matrix
-        length_scale (float or np.ndarray): Length scale parameter(s)
-    
-    Returns:
-        np.ndarray: Validated length scale parameter(s)
-    
-    Raises:
-        ValueError: If length_scale dimensions don't match data dimensions
-    """
     length_scale = np.squeeze(length_scale).astype(float)
     if np.ndim(length_scale) > 1:
         raise ValueError("length_scale cannot be of dimension greater than 1")
@@ -60,37 +47,16 @@ def _check_length_scale(X, length_scale):
 
 
 class RBF_int(StationaryKernelMixin, NormalizedKernelMixin, Kernel):
-    """
-    Radial Basis Function kernel for integer-valued variables.
-    
-    Implementation based on "Dealing with categorical and integer-valued variables 
-    in Bayesian optimization with Gaussian Processes" by Garrido-Merchan & 
-    Hernandez-Lobato (2020).
-    
-    K(x, x') = exp(-0.5 * ||x - x'||² / length_scale²)
-    
-    where x and x' are rounded to nearest integers.
-    """
-    
     def __init__(self, length_scale=1.0, length_scale_bounds=(1e-5, 1e5)):
-        """
-        Initialize the RBF kernel for integer-valued variables.
-        
-        Args:
-            length_scale (float or np.ndarray): Length scale parameter(s)
-            length_scale_bounds (tuple): Bounds for length scale optimization
-        """
         self.length_scale = length_scale
         self.length_scale_bounds = length_scale_bounds
 
     @property
     def anisotropic(self):
-        """Check if the kernel is anisotropic (different length scales per dimension)."""
         return np.iterable(self.length_scale) and len(self.length_scale) > 1
 
     @property
     def hyperparameter_length_scale(self):
-        """Define the length scale hyperparameter properties."""
         if self.anisotropic:
             return Hyperparameter(
                 "length_scale",
@@ -101,17 +67,6 @@ class RBF_int(StationaryKernelMixin, NormalizedKernelMixin, Kernel):
         return Hyperparameter("length_scale", "numeric", self.length_scale_bounds)
 
     def __call__(self, X, Y=None, eval_gradient=False):
-        """
-        Compute the kernel matrix between X and Y.
-        
-        Args:
-            X (np.ndarray): First set of input points
-            Y (np.ndarray, optional): Second set of input points
-            eval_gradient (bool): Whether to evaluate the gradient
-            
-        Returns:
-            np.ndarray: Kernel matrix (and gradient if eval_gradient=True)
-        """
         X = np.atleast_2d(X)
         X = np.around(X)  # Round to nearest integer
         length_scale = _check_length_scale(X, self.length_scale)
@@ -145,20 +100,6 @@ class RBF_int(StationaryKernelMixin, NormalizedKernelMixin, Kernel):
 # ============================================================================
 
 def load_and_preprocess_data(filename):
-    """
-    Load and preprocess data from CSV file.
-    
-    Args:
-        filename (str): Path to CSV file with format:
-                       15 features (columns 1-15) + energy (column 16)
-        
-    Returns:
-        tuple: (X, y) where X is features array and y is target array
-        
-    Raises:
-        FileNotFoundError: If file doesn't exist
-        ValueError: If file has wrong format
-    """
     if not os.path.exists(filename):
         raise FileNotFoundError(f"Data file not found: {filename}")
     
@@ -182,18 +123,6 @@ def load_and_preprocess_data(filename):
 
 
 def create_gpr_model(n_features):
-    """
-    Create and configure the Gaussian Process Regression model.
-    
-    Uses RBF_int kernel for integer-valued features with automatic
-    hyperparameter optimization.
-    
-    Args:
-        n_features (int): Number of input features (typically 15)
-        
-    Returns:
-        GaussianProcessRegressor: Configured GPR model
-    """
     kernel = gp.kernels.ConstantKernel(1, (1e-1, 1e3)) * RBF_int(
         length_scale=0.2 * np.ones((n_features,)),
         length_scale_bounds=(1.0e-1, 1.0e3)
@@ -210,14 +139,6 @@ def create_gpr_model(n_features):
 def evaluate_model(model, X_test, y_test):
     """
     Evaluate the model's performance using MAE.
-    
-    Args:
-        model: Trained GPR model
-        X_test (np.ndarray): Test features
-        y_test (np.ndarray): Test targets
-        
-    Returns:
-        float: Mean Absolute Error
     """
     y_pred = model.predict(X_test, return_std=False)
     mae = mean_absolute_error(y_test, y_pred)
@@ -259,13 +180,11 @@ def generate_batch_suggestions(model1, model2, batch_number,
     """
     print(f"\nGenerating batch {batch_number} suggestions...")
     
-    # Construct output filenames
     output_file = os.path.join(output_dir, f'GPR_batch{batch_number}.csv')
     arranged_file = os.path.join(output_dir, f'GPR_batch{batch_number}_arrange.csv')
     suggest_file = os.path.join(output_dir, f'batch{batch_number+1}_suggest.csv')
     metal_file = os.path.join(output_dir, f'batch{batch_number+1}_metal.csv')
     
-    # Load complete dataspace
     print(f"  Loading dataspace from: {dataspace_file}")
     x_val = []
     multiplicities = []
@@ -277,7 +196,7 @@ def generate_batch_suggestions(model1, model2, batch_number,
             multiplicities.append(mult)
     
     X_val = np.array(x_val, dtype=int)
-    print(f"  ✓ Loaded {len(X_val)} configurations")
+    print(f"   Loaded {len(X_val)} configurations")
     
     # Get predictions and uncertainties from both models
     print("  Predicting *O adsorption energies...")
@@ -296,7 +215,6 @@ def generate_batch_suggestions(model1, model2, batch_number,
     Z = diff_from_target / avg_uncertainty
     acquisition_score = diff_from_target * norm.cdf(Z) + dev1 * norm.pdf(Z)
     
-    # Combine all data for output
     output = np.c_[
         X_val,                    # Columns 0-14: Features
         multiplicities,           # Column 15: Multiplicity
@@ -308,20 +226,17 @@ def generate_batch_suggestions(model1, model2, batch_number,
         acquisition_score        # Column 21: Acquisition score
     ]
     
-    # Save predictions
     np.savetxt(output_file, output, 
               fmt=['%d']*16 + ['%.5f']*6, 
               delimiter=',')
-    print(f"  ✓ Saved predictions to: {output_file}")
+    print(f"   Saved predictions to: {output_file}")
     
-    # Sort by acquisition score (descending)
     data = pd.read_csv(output_file, header=None)
     data.sort_values(data.columns[21], axis=0, ascending=False, inplace=True)
     data.to_csv(arranged_file, header=None, index=None, 
                 columns=list(range(16)))  # Keep only features + multiplicity
-    print(f"  ✓ Sorted configurations by acquisition score")
+    print(f"   Sorted configurations by acquisition score")
     
-    # Generate final suggestions from DFT-compatible subset
     generate_final_suggestions(
         arranged_file, 
         possible_file, 
@@ -348,12 +263,10 @@ def generate_final_suggestions(arranged_file, possible_file, suggest_file,
         metal_file (str): Output file for suggested metal sequences
         max_suggestions (int): Maximum number of suggestions (default: 30)
     """
-    # Read input files
     with open(arranged_file, 'r') as t1, open(possible_file, 'r') as t2:
         arranged_lines = t1.readlines()
         possible_lines = t2.readlines()
     
-    # Find matching lines and their indices
     row_nums = []
     suggestions_count = 0
     
@@ -368,10 +281,9 @@ def generate_final_suggestions(arranged_file, possible_file, suggest_file,
                 if suggestions_count >= max_suggestions:
                     break
     
-    print(f"  ✓ Selected {suggestions_count} suggestions")
-    print(f"  ✓ Saved to: {suggest_file}")
+    print(f"   Selected {suggestions_count} suggestions")
+    print(f"   Saved to: {suggest_file}")
     
-    # Generate corresponding metal sequences
     with open(index_file, 'r') as f:
         index_to_metal = f.readlines()
     
@@ -379,7 +291,7 @@ def generate_final_suggestions(arranged_file, possible_file, suggest_file,
         for num in row_nums:
             fout.write(index_to_metal[num])
     
-    print(f"  ✓ Metal sequences saved to: {metal_file}")
+    print(f"   Metal sequences saved to: {metal_file}")
 
 
 # ============================================================================
@@ -388,8 +300,6 @@ def generate_final_suggestions(arranged_file, possible_file, suggest_file,
 
 def main():
     """
-    Main execution function for GPR training and batch generation.
-    
     Usage:
         python mygaussian.py [batch_number]
     
@@ -411,7 +321,6 @@ def main():
     o_data_file = 'DFT_O_all.csv'
     oh_data_file = 'DFT_OH_all.csv'
     
-    # Check if input files exist
     if not os.path.exists(o_data_file):
         print(f"\nERROR: {o_data_file} not found")
         print("Please ensure your DFT data files are in the current directory")
@@ -443,7 +352,7 @@ def main():
         model1.fit(x_train, y_train)
         
         mae1 = evaluate_model(model1, x_test, y_test)
-        print(f"  ✓ Model 1 MAE: {mae1:.4f} eV")
+        print(f"   Model 1 MAE: {mae1:.4f} eV")
         
         # ====================================================================
         # Train Model 2: *OH Adsorption
@@ -465,7 +374,7 @@ def main():
         model2.fit(x_train2, y_train2)
         
         mae2 = evaluate_model(model2, x_test2, y_test2)
-        print(f"  ✓ Model 2 MAE: {mae2:.4f} eV")
+        print(f"   Model 2 MAE: {mae2:.4f} eV")
         
         # ====================================================================
         # Generate Batch Suggestions
@@ -477,7 +386,7 @@ def main():
         generate_batch_suggestions(model1, model2, batch_number)
         
         print("\n" + "="*60)
-        print("✓ Active Learning Cycle Complete!")
+        print(" Active Learning Cycle Complete!")
         print("="*60)
         print(f"\nNext steps:")
         print(f"  1. Review batch{batch_number+1}_metal.csv for suggested structures")
