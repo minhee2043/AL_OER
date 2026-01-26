@@ -9,7 +9,6 @@ Example usage:
 
 __version__ = '1.0.0'
 
-# Import main classes (will work after you copy your code)
 try:
     from active_learning.core.features import Slab
     from active_learning.core.dataspace import DataspaceGenerator
