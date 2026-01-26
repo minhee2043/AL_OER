@@ -2,7 +2,7 @@
 
 A Python package for efficient alloy catalyst discovery using active learning and Gaussian Process Regression.
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Installation
 
@@ -12,7 +12,7 @@ cd ActiveLearning_OER
 pip install -e .
 ```
 
-**First-time setup**: See [INSTALLATION.md](INSTALLATION.md) for the 5-minute setup guide.
+**First-time setup**: See [INSTALLATION.md](INSTALLATION.md) for setup guide.
 
 ### Usage in Jupyter Notebook
 
@@ -36,12 +36,12 @@ calc = ActivityCalculator()
 calc.calculate_and_plot('batch15_count.csv', 'activity.png')
 ```
 
-## 📚 Examples
+##  Examples
 
 - **examples/simple_example.ipynb** - Quick start guide
 - **examples/complete_workflow.ipynb** - Full workflow tutorial
 
-## 📦 Package Structure
+##  Package Structure
 
 ```
 active_learning_oer/
@@ -59,40 +59,21 @@ active_learning_oer/
 └── examples/              # Jupyter notebooks
 ```
 
-## 🛠️ Features
+##  Features
 
-- ✅ Feature extraction from DFT structures
-- ✅ Gaussian Process Regression with integer-valued kernels
-- ✅ Active learning batch selection
-- ✅ Activity calculation and ternary plotting
-- ✅ Full Jupyter notebook support
-- ✅ Clean imports like DSTAR: `from active_learning import Slab`
+-  Feature extraction from DFT structures
+-  Gaussian Process Regression with integer-valued kernels
+-  Active learning batch selection
+-  Activity calculation and ternary plotting
+-  Full Jupyter notebook support
 
-## 📖 Documentation
+##  Documentation
 
 See [INSTALLATION.md](INSTALLATION.md) for setup instructions.
 
-## 📝 Citation
-
-```bibtex
-@article{jeon2025accelerated,
-  title={Accelerated discovery of earth-abundant oxygen evolution catalysts 
-         through surface-informed machine learning},
-  author={Jeon, Hayun and Park, Minhee and Lee, Won Bo and Kim, YongJoo and Mhin, Sungwook},
-  journal={Nature Communications},
-  year={2025}
-}
 ```
 
-## 📄 License
+##  License
 
 MIT License - See LICENSE file for details.
 
-## 👥 Authors
-
-- Minhee Park (minhee2043@snu.ac.kr)
-- Hayun Jeon
-
-## 🙏 Acknowledgments
-
-Supported by the National Research Foundation of Korea (NRF) grants RS-2024-00446683 and RS-2025-02304435.
