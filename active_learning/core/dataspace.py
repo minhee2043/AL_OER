@@ -2,14 +2,9 @@
 Dataspace generation for alloy surfaces.
 """
 import numpy as np
-from active_learning.utils.helpers import unique, count_metals, multiplicity
+from active_learning.utils.helpers import count_metals, multiplicity
 from math import factorial
-import os
-import csv
-import pickle
-from helperMethods import count_atoms, sortMetals
 import itertools as it
-import pandas as pd
 
 
 def all_fingerprints(filename, nMetals, zoneSizes):
@@ -32,7 +27,7 @@ def all_fingerprints(filename, nMetals, zoneSizes):
     # Zone 1 (3 atoms): [(0,0,0), (0,0,1), (0,0,2), (0,1,1), ...] → 10 ensembles
     # Zone 2 (6 atoms): [(0,0,0,0,0,0), (0,0,0,0,0,1), ...] → 28 ensembles
     # Zones 3,4,5 (3 atoms each): 10 ensembles each
-    allZoneEns = [list(it.combinations_with_replacement(range(3), zoneSize)) for zoneSize in zoneSizes]
+    allZoneEns = [list(it.combinations_with_replacement(range(nMetals), zoneSize)) for zoneSize in zoneSizes]
     
     # Convert each ensemble to metal counts [Ni_count, Fe_count, Co_count]
     # For example:
@@ -54,7 +49,7 @@ def all_fingerprints(filename, nMetals, zoneSizes):
 
     counts = np.zeros((nLines, nMetals), dtype='int64')  # Total metal counts 
     mults = np.zeros(nLines, dtype='int64')  # Multiplicity values
-    feature = np.zeros((nLines, 3*len(zoneSizes)), dtype='int64')  # Fingerprint: 3 metals × 5 zones = 15 elements
+    feature = np.zeros((nLines, nMetals*len(zoneSizes)), dtype='int64')  # Fingerprint: 3 metals × 5 zones = 15 elements
     
     i = 0
 
@@ -63,7 +58,7 @@ def all_fingerprints(filename, nMetals, zoneSizes):
         if saveEns:
             counts = np.zeros((nLines, nMetals), dtype='int64')
             mults = np.zeros(nLines, dtype='int64')
-            feature = np.zeros((nLines, 3*len(zoneSizes)), dtype='int64')
+            feature = np.zeros((nLines, nMetals*len(zoneSizes)), dtype='int64')
 
             i = 0
 
@@ -105,7 +100,7 @@ def all_fingerprints(filename, nMetals, zoneSizes):
             parts = filename.rpartition('.')
             fname = parts[0] + '_%d' % adsEnsId + parts[1] + parts[2]
 
-            np.savetxt(fname, output, fmt=['%d'] * (3*len(zoneSizes)) + ['%d'], delimiter=',')
+            np.savetxt(fname, output, fmt=['%d'] * (nMetals*len(zoneSizes)) + ['%d'], delimiter=',')
             print('ensemble %d saved' % adsEnsId)
 
     if not saveEns:
@@ -113,7 +108,49 @@ def all_fingerprints(filename, nMetals, zoneSizes):
         # Shape: (280000, 16) for zoneSizes=(3,6,3,3,3)
         output = np.c_[feature, mults]
         
-        np.savetxt(filename, output, fmt=['%d'] * (3*len(zoneSizes)) + ['%d'], delimiter=',')
+        np.savetxt(filename, output, fmt=['%d'] * (nMetals*len(zoneSizes)) + ['%d'], delimiter=',')
+
+
+class DataspaceGenerator:
+    """
+    Generate complete fingerprint dataspace for alloy surfaces.
+    
+    Example usage:
+        >>> from active_learning import DataspaceGenerator
+        >>> gen = DataspaceGenerator(n_metals=3, zone_sizes=(3, 6, 3, 3, 3))
+        >>> gen.generate('GPRdataspace.csv')
+        >>> print(f"Generated {gen.n_configurations} configurations")
+    """
+    
+    def __init__(self, n_metals=3, zone_sizes=(3, 6, 3, 3, 3)):
+        """
+        Initialize dataspace generator.
+        
+        Args:
+            n_metals (int): Number of metal types (default: 3 for Ni, Fe, Co)
+            zone_sizes (tuple): Number of atoms in each coordination zone
+        """
+        self.n_metals = n_metals
+        self.zone_sizes = zone_sizes
+        self.n_configurations = None
+    
+    def generate(self, filename='GPRdataspace.csv'):
+        """
+        Generate complete dataspace and save to file.
+        
+        Args:
+            filename (str): Output CSV filename (default: 'GPRdataspace.csv')
+        """
+        print(f"Generating dataspace with {self.n_metals} metals and zone sizes {self.zone_sizes}...")
+        
+        all_fingerprints(filename, self.n_metals, self.zone_sizes)
+        
+        # Calculate number of configurations
+        data = np.loadtxt(filename, delimiter=',')
+        self.n_configurations = len(data)
+        
+        print(f"✓ Generated {self.n_configurations} configurations")
+        print(f"✓ Saved to {filename}")
 
 
 if __name__ == "__main__":
@@ -139,5 +176,13 @@ if __name__ == "__main__":
     else:
         zoneSizes = default_zoneSizes
     
+    print(f"Generating dataspace: {filename}")
+    print(f"  Metals: {nMetals}")
+    print(f"  Zone sizes: {zoneSizes}")
+    
     all_fingerprints(filename, nMetals, zoneSizes)
+    
+    # Show summary
+    data = np.loadtxt(filename, delimiter=',')
+    print(f"\n✓ Generated {len(data)} configurations")
 
