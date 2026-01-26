@@ -2,7 +2,7 @@
 Generate all possible DFT-compatible surface configurations for 2×2×4 slab.
 
 This script generates 6561 (3^8) possible configurations where each of the 8
-positions in a 2×2×4 slab structure can be occupied by Ni, Co, or Fe.
+positions in a 2×2×4 slab structure can be occupied by Ni, Fe, or Co.
 
 The 8 positions correspond to specific locations in the surface structure,
 and each configuration is assigned a multiplicity based on the degeneracy of
@@ -24,7 +24,7 @@ def generate_surface_configurations():
     Generate all possible surface configurations and their feature vectors.
     """
     # Generate all 6561 possible surface configurations (3 metals, 8 positions)
-    possible_surface = list(product(['Ni', 'Co', 'Fe'], repeat=8))
+    possible_surface = list(product(['Ni', 'Fe', 'Co'], repeat=8))
     
     n_configs = len(possible_surface)
     mults = np.zeros(n_configs)
@@ -35,11 +35,11 @@ def generate_surface_configurations():
     for i, config in enumerate(possible_surface):
         # Initialize metal counters for each coordination zone
         # Zone definitions based on geometric positions around adsorption site
-        ensemble = {'Ni': 0, 'Co': 0, 'Fe': 0}          # Atoms forming ads site
-        surface_near = {'Ni': 0, 'Co': 0, 'Fe': 0}      # Nearest surface neighbors
-        subsurface_near = {'Ni': 0, 'Co': 0, 'Fe': 0}   # Nearest subsurface
-        surface_far = {'Ni': 0, 'Co': 0, 'Fe': 0}       # Farther surface neighbors
-        subsurface_far = {'Ni': 0, 'Co': 0, 'Fe': 0}    # Farther subsurface
+        ensemble = {'Ni': 0, 'Fe': 0, 'Co': 0}          # Atoms forming ads site
+        surface_near = {'Ni': 0, 'Fe': 0, 'Co': 0}      # Nearest surface neighbors
+        subsurface_near = {'Ni': 0, 'Fe': 0, 'Co': 0}   # Nearest subsurface
+        surface_far = {'Ni': 0, 'Fe': 0, 'Co': 0}       # Farther surface neighbors
+        subsurface_far = {'Ni': 0, 'Fe': 0, 'Co': 0}    # Farther subsurface
         
         # Map positions to coordination zones
         # Positions 0-7 correspond to specific locations in the 2×2×4 slab
