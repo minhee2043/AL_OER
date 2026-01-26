@@ -67,11 +67,6 @@ active_learning_oer/
 -  Activity calculation and ternary plotting
 -  Full Jupyter notebook support
 
-##  Documentation
-
-See [INSTALLATION.md](INSTALLATION.md) for setup instructions.
-
-```
 
 ##  License
 
