@@ -9,9 +9,7 @@ Output: Ternary activity plot
 
 Usage:
     python activity_plot.py <input_file> [output_file] [E_opt] [T]
-    
-Example:
-    python activity_plot.py batch15_count.csv activity.png 5.3 300
+
 """
 
 import matplotlib.pyplot as plt
@@ -24,7 +22,6 @@ from matplotlib.colors import LinearSegmentedColormap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
-# Plot styling configuration
 plt.rcParams.update({
     'font.family': 'Arial',
     'font.size': 9,
@@ -37,14 +34,6 @@ plt.rcParams.update({
 def generate_composition_grid(steps=18):
     """
     Generate grid of possible ternary compositions.
-    
-    Creates all combinations where x + y + z = 1.0 for ternary system.
-    
-    Args:
-        steps (int): Number of discretization steps (default: 18)
-        
-    Returns:
-        list of tuples: [(x, y, z), ...] where x+y+z = 1
     """
     step_size = 1.0 / (steps - 1)
     compositions = []
@@ -73,9 +62,6 @@ def calculate_activities(input_file, compositions, E_opt=5.3, T=300):
         compositions (list): List of (Ni, Fe, Co) composition tuples
         E_opt (float): Optimal descriptor value in eV (default: 5.3)
         T (float): Temperature in Kelvin (default: 300)
-        
-    Returns:
-        np.ndarray: Activity values for each composition
     """
     kb = 8.617333262e-5  # Boltzmann constant in eV/K
     
@@ -86,7 +72,6 @@ def calculate_activities(input_file, compositions, E_opt=5.3, T=300):
     for idx, ratio in enumerate(compositions):
         activity = 0
         
-        # Read configuration data and calculate activity contribution
         with open(input_file) as file:
             csvreader = csv.reader(file)
             for row in csvreader:
@@ -104,7 +89,6 @@ def calculate_activities(input_file, compositions, E_opt=5.3, T=300):
                                  math.pow(ratio[1], Fe_count) * 
                                  math.pow(ratio[2], Co_count))
                     
-                    # Calculate Boltzmann factor
                     # exp(-|ΔG - ΔG_opt| / kT)
                     boltz_factor = math.exp(-abs(energy_diff - E_opt) / (kb * T))
                     
@@ -117,7 +101,6 @@ def calculate_activities(input_file, compositions, E_opt=5.3, T=300):
         
         activities.append(activity)
         
-        # Progress indicator
         if (idx + 1) % 50 == 0:
             print(f"  Calculated {idx + 1}/{len(compositions)} compositions")
     
@@ -125,18 +108,6 @@ def calculate_activities(input_file, compositions, E_opt=5.3, T=300):
 
 
 def convert_to_ternary_coordinates(compositions):
-    """
-    Convert ternary compositions to 2D Cartesian coordinates for plotting.
-    
-    Args:
-        compositions (np.ndarray): Array of (Ni, Fe, Co) compositions
-        
-    Returns:
-        tuple: (x_coords, y_coords) for plotting
-    """
-    # Standard ternary plot transformation
-    # x = Fe + Co/2
-    # y = Co × sqrt(3)/2
     y = 0.5 * np.sqrt(3) * compositions[:, 2]  # Co component
     x = compositions[:, 1] + y / np.sqrt(3)    # Fe + Co/2
     
@@ -146,23 +117,14 @@ def convert_to_ternary_coordinates(compositions):
 def plot_ternary_activity(compositions, activities, output_file='Activity_ternaryplot.png'):
     """
     Create ternary activity plot with custom color scheme.
-    
-    Args:
-        compositions (np.ndarray): Composition array
-        activities (np.ndarray): Activity values
-        output_file (str): Output filename
     """
-    # Convert to plotting coordinates
     x, y = convert_to_ternary_coordinates(compositions)
     
-    # Define custom colormap
     colors_custom = ['#3E1F00', '#FF9B66', '#FFFFFF', '#9B8CC5', '#4A3C89']
     custom_cmap = LinearSegmentedColormap.from_list('custom', colors_custom)
     
-    # Create figure
     fig, ax = plt.subplots()
     
-    # Draw triangle boundary (scaled)
     center_x = (0 + 1 + 0.5) / 3
     center_y = (0 + 0 + 0.5*np.sqrt(3)) / 3
     scale = 1.13
@@ -175,7 +137,6 @@ def plot_ternary_activity(compositions, activities, output_file='Activity_ternar
     ])
     plt.plot(triangle_points[:,0], triangle_points[:,1], 'k-', linewidth=0.4)
     
-    # Plot data points
     scatter = plt.scatter(x, y, 
                          s=45,                
                          c=activities,        
@@ -184,7 +145,6 @@ def plot_ternary_activity(compositions, activities, output_file='Activity_ternar
                          edgecolor='none',
                          vmin=0, vmax=activities.max())
     
-    # Add vertex labels
     text_offset = 0.01
     plt.text(triangle_points[0,0] - text_offset*2, triangle_points[0,1], 'Ni', 
              fontsize=9, ha='right', va='center', weight='bold')
@@ -193,12 +153,10 @@ def plot_ternary_activity(compositions, activities, output_file='Activity_ternar
     plt.text(triangle_points[2,0], triangle_points[2,1] + text_offset*1.5, 'Co', 
              fontsize=9, ha='center', va='bottom', weight='bold')
     
-    # Configure plot
     plt.axis('off')
     plt.xlim(-0.1, 1.1)
     plt.ylim(-0.1, 0.95)
     
-    # Add colorbar
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.2)
     
@@ -212,12 +170,10 @@ def plot_ternary_activity(compositions, activities, output_file='Activity_ternar
     cbar.ax.set_yticklabels([f'{x:.3f}' for x in np.linspace(0, activities.max(), 6)], 
                            weight='bold')
     
-    # Save figure
     plt.subplots_adjust(right=0.9)
     plt.savefig(output_file, bbox_inches='tight')
-    print(f"✓ Plot saved to: {output_file}")
+    print(f" Plot saved to: {output_file}")
     
-    # Find and report optimal composition
     max_idx = np.argmax(activities)
     optimal_comp = compositions[max_idx]
     print(f"\nOptimal composition (highest activity):")
@@ -234,7 +190,6 @@ def main():
     Usage:
         python activity_plot.py <input_file> [output_file] [E_opt] [T]
     """
-    # Check command line arguments
     if len(sys.argv) < 2:
         print("ERROR: Missing required argument\n")
         print("Usage: python activity_plot.py <input_file> [output_file] [E_opt] [T]\n")
@@ -247,13 +202,11 @@ def main():
         print("  python activity_plot.py batch15_count.csv activity.png 5.3 300")
         sys.exit(1)
     
-    # Parse arguments
     input_file = sys.argv[1]
     output_file = sys.argv[2] if len(sys.argv) > 2 else 'Activity_ternaryplot.png'
     E_opt = float(sys.argv[3]) if len(sys.argv) > 3 else 5.3
     T = float(sys.argv[4]) if len(sys.argv) > 4 else 300
     
-    # Validate input file
     if not os.path.exists(input_file):
         print(f"ERROR: Input file '{input_file}' not found")
         sys.exit(1)
@@ -265,16 +218,13 @@ def main():
     print(f"  Temperature: {T} K\n")
     
     try:
-        # Generate composition grid
         compositions = generate_composition_grid(steps=18)
         compositions = np.array(compositions)
-        print(f"✓ Generated {len(compositions)} composition points\n")
+        print(f" Generated {len(compositions)} composition points\n")
         
-        # Calculate activities
         activities = calculate_activities(input_file, compositions, E_opt, T)
-        print(f"✓ Activity calculation complete\n")
+        print(f" Activity calculation complete\n")
         
-        # Create plot
         plot_ternary_activity(compositions, activities, output_file)
         
     except Exception as e:
