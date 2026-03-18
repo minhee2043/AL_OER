@@ -297,14 +297,14 @@ class Slab(object):
         USAGE EXAMPLES:
         
         1. Hollow site with combined zones (your case):
-           zones=['ens', 'sn', 'ssn', 'sf', 'ssf']
+           zones=['ens', 'sf', 'ssf', 'sn', 'ssn']
            Result for ['Ni','Fe','Co']: 15 elements
            [Ni1,Fe1,Co1, Ni2,Fe2,Co2, Ni3,Fe3,Co3, Ni4,Fe4,Co4, Ni5,Fe5,Co5]
            - Zone 1 (ens): 3 atoms
-           - Zone 2 (sn): 3 atoms  
-           - Zone 3 (ssn): 1-3 atoms
-           - Zone 4 (sf): 6 atoms
-           - Zone 5 (ssf): 3-6 atoms
+           - Zone 2 (sf): 6 atoms  
+           - Zone 3 (ssf): 3-6 atoms
+           - Zone 4 (sn): 3 atoms
+           - Zone 5 (ssn): 1-3 atoms
         
         2. On-top site with basic zones:
            onTop=True, zones=['ens', 's', 'ss']
