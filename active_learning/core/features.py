@@ -22,7 +22,7 @@ class Slab(object):
 
     def __init__(self, atoms=None):
         self.atoms = atoms      # ASE Atoms object of the slab structure
-        self.slab3x3 = None     # Slab repeated 3x3x1 for periodic boundary handling
+        self.slab2x2 = None     # Slab repeated 2x2x1 for periodic boundary handling
         self.site = None        # Adsorption site type: 'hcp' or 'fcc'
 
     def get_site(self):
@@ -36,15 +36,15 @@ class Slab(object):
         '''
         # Get the 3 closest surface atoms forming the adsorption triangle
         ensSym, ensIds = self.closest(layer=1, start=1, stop=3)
-        slab3x3 = self.slab3x3
+        slab2x2 = self.slab2x2
 
         # Get x,y positions of the 3 ensemble atoms
-        ensPos = slab3x3.get_positions()[ensIds][:, 0:2]
+        ensPos = slab2x2.get_positions()[ensIds][:, 0:2]
         triangle = Triangle(ensPos[0], ensPos[1], ensPos[2])
 
         # Get all subsurface (tag=2) atom IDs and their x,y positions
-        subIds = [atom.index for atom in slab3x3 if atom.tag == 2]
-        subPos = slab3x3.get_positions()[subIds][:, 0:2]
+        subIds = [atom.index for atom in slab2x2 if atom.tag == 2]
+        subPos = slab2x2.get_positions()[subIds][:, 0:2]
 
         # Check if any subsurface atom lies within the adsorption triangle
         count, hcp = 0, False
@@ -53,7 +53,7 @@ class Slab(object):
                 count += 1
                 hcp = True
                 subId = subIds[i]
-                symbols = slab3x3.get_chemical_symbols()
+                symbols = slab2x2.get_chemical_symbols()
                 subMetal = symbols[subId]
         
         if count > 1:
@@ -67,18 +67,18 @@ class Slab(object):
             return None, None
 
     def adsorbate_id(self):
-        '''Return the atom ID of the central adsorbate in the 3x3 extended slab.
+        '''Return the atom ID of the central adsorbate in the 2x2 extended slab.
         
-        The slab is extended 3x3 to handle periodic boundaries properly.
+        The slab is extended 2x2 to handle periodic boundaries properly.
         Returns the ID of the adsorbate at the center cell.
         '''
-        # Extend slab 3x3 to handle periodic boundaries
+        # Extend slab 2x2 to handle periodic boundaries
         n = 3
-        slab3x3 = self.atoms.repeat((n, n, 1))
-        self.slab3x3 = slab3x3
+        slab2x2 = self.atoms.repeat((n, n, 1))
+        self.slab2x2 = slab2x2
 
-        # Get IDs of all adsorbate atoms (tag=0) in the 3x3 slab
-        adsIds = np.array([atom.index for atom in slab3x3 if atom.tag == 0])
+        # Get IDs of all adsorbate atoms (tag=0) in the 2x2 slab
+        adsIds = np.array([atom.index for atom in slab2x2 if atom.tag == 0])
 
         # Number of atoms per adsorbate (e.g., 1 for O, 2 for OH)
         nAdsAtoms = int(len(adsIds) / (n * n))
@@ -87,7 +87,7 @@ class Slab(object):
         keepIds = range(0, len(adsIds), nAdsAtoms)
         adsIds = adsIds[keepIds]
 
-        # Reshape to 3x3 grid and return central adsorbate ID
+        # Reshape to 2x2 grid and return central adsorbate ID
         adsIds = adsIds.reshape((n, n))
         nHalf = int(n / 2)
         return adsIds[nHalf, nHalf]
@@ -106,13 +106,13 @@ class Slab(object):
         
         '''
         adsId = self.adsorbate_id()
-        slab3x3 = self.slab3x3
+        slab2x2 = self.slab2x2
         
         # Get all atoms in the specified layer
-        layerIds = [atom.index for atom in slab3x3 if atom.tag == layer]
+        layerIds = [atom.index for atom in slab2x2 if atom.tag == layer]
         
         # Calculate distances from adsorbate to all layer atoms
-        layerDist = slab3x3.get_distances(adsId, layerIds)
+        layerDist = slab2x2.get_distances(adsId, layerIds)
         
         # Sort atoms by distance and select range [start, stop]
         indexedDist = [[layerIds[i], layerDist[i]] for i in range(len(layerDist))]
@@ -122,7 +122,7 @@ class Slab(object):
         ids = [i for i, dist in sortedDist]
 
         # Get chemical symbols and sort by atom ID 
-        symbols = np.array(slab3x3.get_chemical_symbols())
+        symbols = np.array(slab2x2.get_chemical_symbols())
         zoneSym = list(symbols[ids])
         indexedSym = [[zoneSym[i], ids[i]] for i in range(len(ids))]
         sortedSym = sorted(indexedSym, key=lambda x: x[1])
@@ -256,7 +256,7 @@ class Slab(object):
         '''
         adsId = self.adsorbate_id()
         metalId = self.closest(1, 1, 1)[1]  # Closest surface metal id
-        [dist] = self.slab3x3.get_distance(adsId, metalId, vector=True)
+        [dist] = self.slab2x2.get_distance(adsId, metalId, vector=True)
         xyDist = np.sqrt(dist[0]**2 + dist[1]**2)
 
         if xyDist < onTopDist:
