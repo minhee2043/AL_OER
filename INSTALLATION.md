@@ -84,10 +84,9 @@ These files are already converted and ready to use:
 ## What You Need to Do
 
 Just copy and update 2 files:
-- ⏳ `motif_to_feature.py` → `active_learning/core/features.py`
-- ⏳ `GPRdataspace.py` → `active_learning/core/dataspace.py`
+- `motif_to_feature.py` → `active_learning/core/features.py`
+- `GPRdataspace.py` → `active_learning/core/dataspace.py`
 
-That's it! Total time: 5 minutes.
 
 ## Usage After Installation
 
