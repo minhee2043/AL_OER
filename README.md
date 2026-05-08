@@ -36,10 +36,6 @@ calc = ActivityCalculator()
 calc.calculate_and_plot('batch15_count.csv', 'activity.png')
 ```
 
-##  Examples
-
-- **examples/simple_example.ipynb** - Quick start guide
-- **examples/complete_workflow.ipynb** - Full workflow tutorial
 
 ##  Package Structure
 
