@@ -1,5 +1,10 @@
 # Active Learning for OER Catalyst Discovery
 
+> **This repository contains the code for our paper published in *Advanced Science*:**
+> [https://doi.org/10.1002/advs.78281](https://advanced.onlinelibrary.wiley.com/doi/full/10.1002/advs.78281)
+>
+> If you use this code, please cite the paper.
+
 A Python package for efficient alloy catalyst discovery using active learning and Gaussian Process Regression.
 
 ##  Quick Start
