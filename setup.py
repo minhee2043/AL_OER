@@ -31,7 +31,7 @@ setup(
     description='Active learning framework for OER catalyst discovery using Gaussian Process Regression',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/minhee2043/ActiveLearning_OER',
+    url='https://github.com/minhee2043/AL_OER',
     packages=find_packages(),
     classifiers=[
         'Development Status :: 4 - Beta',

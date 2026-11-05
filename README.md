@@ -14,8 +14,8 @@ A Python package for efficient alloy catalyst discovery using active learning an
 ### Installation
 
 ```bash
-git clone https://github.com/minhee2043/ActiveLearning_OER.git
-cd ActiveLearning_OER
+git clone https://github.com/minhee2043/AL_OER.git
+cd AL_OER
 pip install -e .
 ```
 
