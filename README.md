@@ -1,5 +1,12 @@
 # Active Learning for OER Catalyst Discovery
 
+> **This repository contains the code for the paper:**
+> H. Jeon, M. Park, W. B. Lee, S. Park, Y. Kim, S. Mhin,
+> "[Accelerated Discovery of Earth-Abundant Oxygen Evolution Catalysts Through Surface-Informed Active Learning](https://advanced.onlinelibrary.wiley.com/doi/full/10.1002/advs.78281)",
+> *Advanced Science*, e78281 (2026). DOI: [10.1002/advs.78281](https://doi.org/10.1002/advs.78281)
+>
+> If you use this code, please cite the paper (see [Citation](#citation)).
+
 A Python package for efficient alloy catalyst discovery using active learning and Gaussian Process Regression.
 
 ##  Quick Start
@@ -7,8 +14,8 @@ A Python package for efficient alloy catalyst discovery using active learning an
 ### Installation
 
 ```bash
-git clone https://github.com/minhee2043/ActiveLearning_OER.git
-cd ActiveLearning_OER
+git clone https://github.com/minhee2043/AL_OER.git
+cd AL_OER
 pip install -e .
 ```
 
@@ -63,6 +70,19 @@ active_learning_oer/
 -  Activity calculation and ternary plotting
 -  Full Jupyter notebook support
 
+
+## Citation
+If you find this code useful in your research, please cite:
+```bibtex
+@article{jeon2026accelerated,
+  title   = {Accelerated Discovery of Earth-Abundant Oxygen Evolution Catalysts Through Surface-Informed Active Learning},
+  author  = {Jeon, Hayun and Park, Minhee and Lee, Won Bo and Park, Seyoung and Kim, YongJoo and Mhin, Sungwook},
+  journal = {Advanced Science},
+  pages   = {e78281},
+  year    = {2026},
+  doi     = {10.1002/advs.78281}
+}
+```
 
 ##  License
 
